@@ -1,0 +1,24 @@
+# CineMind Backend Dependencies
+# Install with:  pip install -r requirements.txt
+
+# --- Web framework ---
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9          # for form data if needed later
+
+# --- Data + ML artifacts (the final model) ---
+pandas==2.2.2
+numpy==1.26.4
+faiss-cpu==1.8.0.post1
+
+# NOTE: sentence-transformers is NOT needed at runtime because
+# embeddings are already saved in models/movie_embeddings.npy.
+# The notebook used it once to CREATE the embeddings; the backend
+# only LOADS them.
+
+# --- Chatbot (ONLY the chatbot may use an external AI API) ---
+openai==1.40.0                   # works with OpenAI, Groq, Together, Ollama, etc.
+python-dotenv==1.2.3             # auto-load .env vars (AI_API_KEY etc.)
+
+# --- Server auto-reload during development ---
+# uvicorn --reload is enough, no extra package needed.

@@ -1,0 +1,187 @@
+/* ============================================================
+   CineMind — Responsive (Black & Red · Modern)
+   ============================================================ */
+
+/* ---- Large desktop ---- */
+@media (min-width: 1400px) {
+  .container { padding: 32px 48px 0; }
+  .movie-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 24px; }
+  .hero-info h2 { font-size: 58px; }
+  .rec-grid { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); }
+  .ticker { margin: 0 -48px 0; }
+  .carousel-section { margin: 34px -48px 48px; }
+}
+
+/* ---- Compact desktop ---- */
+@media (max-width: 1200px) {
+  .hero-info h2 { font-size: 40px; }
+  .hero-poster { width: 210px; }
+}
+
+/* ---- Tablet ---- */
+@media (max-width: 900px) {
+  .header-inner { flex-wrap: wrap; padding: 13px 20px; gap: 12px; }
+  .search-box { order: 3; width: 100%; max-width: none; }
+  .chat-toggle { margin-left: auto; }
+
+  .container { padding: 22px 24px 0; }
+
+  .brand-hero { height: 66vh; min-height: 520px; }
+  .brand-hero-inner { padding: 0 30px; }
+  .brand-hero-title { font-size: 52px; }
+  .brand-hero-slogan { font-size: 14px; }
+
+  .result-grid { margin-bottom: 10px; }
+  .hero-topline { justify-content: center; padding: 22px 20px 0; }
+  .hero-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 18px 22px 32px;
+    gap: 30px;
+  }
+  .hero-poster { width: 190px; }
+  .hero-info { align-items: center; }
+  .hero-info h2 { font-size: 34px; }
+  .hero-info h2::after { left: 50%; transform: translateX(-50%); }
+  .overview { max-width: 100%; -webkit-line-clamp: 4; text-align: center; }
+  .meta-row { justify-content: center; }
+  .hero-source { display: none; }
+
+  .section-head { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .movie-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+
+  .modal-body { flex-direction: column; align-items: center; text-align: center; }
+  .modal-poster { width: 180px; height: 270px; }
+  .meta-grid { grid-template-columns: 1fr; text-align: left; }
+  .modal-card { padding: 26px 22px; }
+  .modal-info h2::after { left: 50%; transform: translateX(-50%); }
+}
+
+/* ---- Mobile ---- */
+@media (max-width: 600px) {
+  .header-inner { padding: 11px 16px; gap: 10px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 17px; }
+  .brand-logo { width: 38px; height: 38px; }
+
+  .search-box input { padding: 11px 14px 11px 44px; font-size: 13px; }
+  .search-icon { left: 15px; width: 16px; height: 16px; }
+  .btn { padding: 10px 14px; font-size: 13px; }
+  .chat-toggle span { display: none; }
+  .chat-toggle { padding: 10px; }
+
+  .container { padding: 16px 16px 0; }
+  .ticker { margin: 0 -16px 0; }
+  .ticker-track { gap: 24px; padding: 9px 0; }
+
+  .brand-hero { height: auto; min-height: 560px; align-items: flex-start; padding-top: 34px; }
+  .brand-hero-inner { padding: 0 20px; }
+  .brand-hero-title { font-size: 44px; }
+  .brand-hero-slogan { font-size: 13.5px; margin-bottom: 24px; }
+  .hero-chips { gap: 12px; }
+  .hero-chip b { font-size: 18px; }
+  .hero-chip span { display: none; }
+  .hero-chip-sep { display: none; }
+  .btn-hero { padding: 12px 20px; font-size: 13px; }
+  .row-card.big-rank { width: 150px; }
+  .row-card.big-rank::after { font-size: 82px; bottom: -24px; }
+
+  .welcome-title { font-size: 34px; }
+  .welcome-desc { font-size: 14px; }
+  .welcome-badge { font-size: 9.5px; }
+  .welcome-content { padding: 38px 20px; border-radius: 18px; }
+
+  .hero-content { padding: 14px 16px 26px; gap: 24px; }
+  .hero-poster { width: 148px; }
+  .hero-info h2 { font-size: 27px; }
+  .overview { font-size: 13px; }
+  .hero-badge { font-size: 9.5px; padding: 6px 12px; }
+
+  .movie-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .movie-card .card-title { font-size: 13px; }
+
+  .rec-grid { grid-template-columns: 1fr; gap: 12px; }
+  .rec-poster-wrap img { width: 84px; height: 126px; }
+
+  .section-title { font-size: 21px; margin-bottom: 14px; }
+  .section-note { font-size: 9.5px; }
+
+  .carousel-section { margin: 22px -16px 34px; height: 340px; }
+  .carousel-card { width: 175px; height: 300px; }
+
+  .row-title { font-size: 20px; }
+
+  .modal-card { padding: 20px 16px; }
+  .modal-info h2 { font-size: 26px; }
+  .modal-poster { width: 150px; height: 225px; }
+
+  .chat-panel-inner { width: 100%; }
+  .chat-header { padding: 16px 16px 14px; }
+  .chat-messages { padding: 16px; }
+  .chat-input-row { padding: 12px; }
+  .chat-movies { grid-template-columns: 1fr 1fr; gap: 6px; }
+
+  .back-home-fab { bottom: 18px; left: 16px; padding: 11px 16px 11px 14px; font-size: 12.5px; }
+  .back-home-fab span { font-size: 12.5px; }
+}
+
+/* ---- Very small phones ---- */
+@media (max-width: 380px) {
+  .brand-logo { width: 34px; height: 34px; }
+  .brand-name { font-size: 15px; }
+  .movie-grid { gap: 10px; }
+  .welcome-title { font-size: 28px; }
+  .hero-poster { width: 126px; }
+  .hero-info h2 { font-size: 24px; }
+  .brand-hero-title { font-size: 31px; }
+}
+
+/* ---- Feature nav + tool modal responsiveness ---- */
+@media (max-width: 900px) {
+  .feature-cols { grid-template-columns: 1fr; }
+  .whatif-grid { grid-template-columns: 1fr; }
+  .compare-grid.cols-3 { grid-template-columns: 1fr; }
+  .compare-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .feature-header, .feature-body { padding-left: 26px; padding-right: 26px; }
+}
+
+@media (max-width: 600px) {
+  .feature-nav { padding: 9px 12px; gap: 6px; }
+  .fn-btn { padding: 7px 11px; font-size: 11px; gap: 5px; }
+  .fn-btn svg { width: 13px; height: 13px; }
+  .feature-header, .feature-body { padding-left: 18px; padding-right: 18px; }
+  .feature-title { font-size: 26px; }
+  .modal-actions { padding: 14px 18px 0 14px; }
+  .modal-reasons { margin: 14px 14px 22px; }
+  .stat-strip { gap: 10px; }
+  .feature-stat { min-width: 90px; padding: 13px 14px; }
+  .feature-stat b { font-size: 21px; }
+  .whatif-right { grid-template-columns: 1fr; }
+  .compare-grid.cols-2 { grid-template-columns: 1fr; }
+  .compare-dock { left: 16px; right: 16px; transform: none; max-width: none; }
+  .compare-dock-inner { flex-direction: column; align-items: stretch; }
+  .compare-chips { justify-content: flex-start; }
+  .compare-dock-label { justify-content: center; }
+  .genre-bar-label { width: 92px; }
+}
+
+/* ---- RecLab view responsiveness ---- */
+@media (max-width: 900px) {
+  .reclab-ws-head { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .reclab-ws-body .feature-cols { grid-template-columns: 1fr; }
+  .reclab-ws-body .whatif-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+  .nav-lab-btn { padding: 10px; }
+  .nav-lab-btn .nav-lab-label { display: none; }
+  .reclab-head { padding-top: 6px; }
+  .reclab-tabs { gap: 7px; padding: 9px; }
+  .reclab-tab { padding: 8px 12px; font-size: 11.5px; gap: 6px; }
+  .reclab-tab svg { width: 13px; height: 13px; }
+  .reclab-ws-head { padding: 18px 18px 0; }
+  .reclab-ws-body { padding: 16px 18px 26px; }
+  .reclab-ws-title { font-size: 17px; }
+  .reclab-ws-sub { font-size: 9.5px; }
+}

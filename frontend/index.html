@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CineMind</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- Scroll progress bar + cursor light -->
+  <div id="scrollProgress" class="scroll-progress" aria-hidden="true"></div>
+  <div id="cursorGlow" class="cursor-glow" aria-hidden="true"></div>
+
+  <!-- Floating back-to-home (shown whenever search results are on screen) -->
+  <button class="back-home-fab hidden" id="backHomeFab" aria-label="Back to Home">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    <span>Back to Home</span>
+  </button>
+
+  <!-- ============ HEADER ============ -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M3 4h2.5l3 9 3-9h2.5l3 9 3-9H21v16h-2.5V9l-3 9h-2.5l-3-9v11H3z" fill="#ffffff"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-name"><span>Cine</span><span class="accent">Mind</span></h1>
+          <p class="brand-sub">Movie Discovery</p>
+        </div>
+      </div>
+
+      <div class="search-box">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Search movies..." autocomplete="off" />
+        <button id="searchBtn" class="btn btn-primary">Search</button>
+      </div>
+
+      <button id="recLabNavBtn" class="btn btn-primary nav-lab-btn" title="Recommendation Lab (AI Discovery · What-If · Watchlist · Preferences · Insights · History)" aria-label="Open Recommendation Lab">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6.5L4.6 19a2 2 0 0 0 1.8 2.9h11.2a2 2 0 0 0 1.8-2.9L14 9.5V3"/><path d="M7.5 14h9"/></svg>
+        <span class="nav-lab-label">Recommendation Lab</span>
+      </button>
+
+      <button id="chatToggleBtn" class="btn btn-ghost chat-toggle">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+        </svg>
+        <span>Chat</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============ MAIN ============ -->
+  <main class="container">
+
+    <!-- Loading + error states -->
+    <div id="loadingBar" class="loading-bar hidden">
+      <div class="spinner"></div>
+      <span id="loadingText">Loading…</span>
+    </div>
+    <div id="errorBox" class="error-box hidden"></div>
+
+    <!-- ============ RESULT STAGE (selected movie + recommendations) — TOP ============ -->
+    <div class="result-grid">
+      <!-- Selected movie — cinematic hero -->
+      <section id="selectedSection" class="selected-section hidden">
+        <div class="hero-backdrop" id="heroBackdrop"></div>
+        <div class="hero-topline">
+          <span class="hero-badge">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 3v18M3 12h18"/></svg>
+            YOUR PICK
+          </span>
+          <span class="hero-source">matched by the FAISS semantic engine</span>
+        </div>
+        <div class="hero-content">
+          <div class="hero-poster-wrap">
+            <img id="selectedPoster" class="hero-poster" src="" alt="poster" />
+          </div>
+          <div class="hero-info">
+            <h2 id="selectedTitle"></h2>
+            <p id="selectedOverview" class="overview"></p>
+            <div class="meta-row" id="selectedMeta"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Recommendations -->
+      <section id="recommendationsSection" class="section hidden">
+<div class="section-head">
+        <h3 class="section-title">
+          <span class="title-glow">More Like This</span>
+          <span class="section-sub" id="recCount"></span>
+        </h3>
+        <span class="section-note">ranked by semantic similarity</span>
+        <button class="btn btn-ghost btn-back">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Back to Home
+        </button>
+      </div>
+        <div id="recommendations" class="rec-grid"></div>
+      </section>
+    </div>
+
+    <!-- Search results -->
+    <section id="searchResultsSection" class="section hidden">
+      <div class="section-head">
+        <h3 class="section-title"><span class="title-glow">Search Results</span></h3>
+        <button class="btn btn-ghost btn-back">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Back to Home
+        </button>
+      </div>
+      <div id="searchResults" class="movie-grid"></div>
+    </section>
+
+    <!-- ============ HERO (Netflix-style) ============ -->
+    <section id="brandHeroSection" class="brand-hero">
+      <div class="hero-bg">
+        <img alt="CineMind hero backdrop"
+             src="https://ik.imagekit.io/1h6w2urvx/ChatGPT%20Image%20Sep%2012,%202026,%2001_13_03%20PM.png"
+             onerror="this.closest('.hero-bg').style.display='none'" />
+      </div>
+      <div class="hero-fade-top"></div>
+      <div class="hero-scrim hero-scrim-left"></div>
+      <div class="hero-scrim hero-scrim-bottom"></div>
+      <div class="brand-hero-inner">
+        <div class="hero-body">
+          <!-- <span class="brand-hero-badge"><i></i> Trending · Personal AI Curation</span> -->
+          <h1 class="brand-hero-title">
+            <span class="hero-word">Cine</span><span class="hero-word accent">Mind</span>
+          </h1>
+          <p class="brand-hero-slogan"><span class="slogan-word" style="animation-delay:1.0s">Find</span> <span class="slogan-word" style="animation-delay:1.08s">the</span> <span class="slogan-word" style="animation-delay:1.14s">Right</span> <span class="slogan-word" style="animation-delay:1.22s">Story</span> <span class="slogan-word" style="animation-delay:1.30s">for</span> <span class="slogan-word" style="animation-delay:1.38s">Every</span> <span class="slogan-word" style="animation-delay:1.46s">Mood,</span> <span class="slogan-word" style="animation-delay:1.54s">Moment,</span> <span class="slogan-word" style="animation-delay:1.62s">and</span> <span class="slogan-word" style="animation-delay:1.70s">Movie</span> <span class="slogan-word" style="animation-delay:1.78s">Night.</span></p>
+          <div class="hero-chips">
+            <span class="hero-chip"><b id="statMovies" data-count="9828" data-full="9,828">9,828</b><span>Films Indexed</span></span>
+          </div>
+          <div class="hero-cta">
+            <button id="heroExploreBtn" class="btn btn-primary btn-hero">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              Explore Movies
+            </button>
+            <button id="heroAIBtn" class="btn btn-ghost btn-hero">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>
+              Ask the AI
+            </button>
+          </div>
+          <div class="hero-try-row">
+            <span class="hero-try-label">Try&nbsp;:</span>
+            <button class="chip" data-search="Interstellar">Interstellar</button>
+            <button class="chip" data-search="Inception">Inception</button>
+            <button class="chip" data-search="The Dark Knight">Dark Knight</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ HERO CAROUSEL (auto-scrolling right to left) ============ -->
+    <section id="carouselSection" class="carousel-section">
+      <div class="carousel-track" id="carouselTrack">
+        <!-- carousel cards injected by app.js -->
+      </div>
+    </section>
+
+    <!-- ============ TRENDING NOW (horizontal scroll row) ============ -->
+    <section id="trendingSection" class="row-section hidden">
+      <div class="row-header">
+        <h3 class="row-title">
+          <span class="row-icon">🔥</span> Trending Now
+        </h3>
+        <span class="row-sub" id="trendingCount"></span>
+      </div>
+      <div class="row-scroll" id="trendingRow">
+        <!-- trending cards injected by app.js -->
+      </div>
+    </section>
+
+    <!-- ============ TOP RATED (horizontal scroll row) ============ -->
+    <section id="topRatedSection" class="row-section hidden">
+      <div class="row-header">
+        <h3 class="row-title">
+          <span class="row-icon">🏆</span> Top Rated
+        </h3>
+        <span class="row-sub" id="topRatedCount"></span>
+      </div>
+      <div class="row-scroll" id="topRatedRow">
+        <!-- top rated cards injected by app.js -->
+      </div>
+    </section>
+
+    <!-- ============ NEW RELEASES (horizontal scroll row) ============ -->
+    <section id="newReleasesSection" class="row-section hidden">
+      <div class="row-header">
+        <h3 class="row-title">
+          <span class="row-icon">🆕</span> New Releases
+        </h3>
+        <span class="row-sub" id="newReleasesCount"></span>
+      </div>
+      <div class="row-scroll" id="newReleasesRow">
+        <!-- newest releases injected by app.js -->
+      </div>
+    </section>
+
+    <!-- ============ HIDDEN GEMS (horizontal scroll row) ============ -->
+    <section id="gemsSection" class="row-section hidden">
+      <div class="row-header">
+        <h3 class="row-title">
+          <span class="row-icon">💎</span> Hidden Gems
+        </h3>
+        <span class="row-sub" id="gemsCount"></span>
+      </div>
+      <div class="row-scroll" id="gemsRow">
+        <!-- underrated + highly rated films injected by app.js -->
+      </div>
+    </section>
+
+    <!-- ============ AROUND THE WORLD (horizontal scroll row) ============ -->
+    <section id="worldSection" class="row-section hidden">
+      <div class="row-header">
+        <h3 class="row-title">
+          <span class="row-icon">🌍</span> Around the World
+        </h3>
+        <span class="row-sub" id="worldCount"></span>
+      </div>
+      <div class="row-scroll" id="worldRow">
+        <!-- non-English films injected by app.js -->
+      </div>
+    </section>
+
+    <!-- ============ FAN FAVORITES (horizontal scroll row) ============ -->
+    <section id="favoritesSection" class="row-section hidden">
+      <div class="row-header">
+        <h3 class="row-title">
+          <span class="row-icon">💥</span> Fan Favorites
+        </h3>
+        <span class="row-sub" id="favoritesCount"></span>
+      </div>
+      <div class="row-scroll" id="favoritesRow">
+        <!-- most-voted films injected by app.js -->
+      </div>
+    </section>
+
+    <!-- ============ GENRE ROWS (dynamic) + FOR YOU (personalized) ============ -->
+    <section id="forYouSection" class="row-section hidden">
+      <div class="row-header">
+        <h3 class="row-title">
+          <span class="row-icon">✨</span> Made for You
+        </h3>
+        <span class="row-sub" id="forYouCount"></span>
+      </div>
+      <div class="row-scroll" id="forYouRow">
+        <!-- personalized picks injected by app.js -->
+      </div>
+    </section>
+    <div id="genreRowsContainer">
+      <!-- genre rows injected by app.js -->
+    </div>
+
+    <!-- Welcome (shown only if both rows empty AND no search) -->
+    <section id="welcomeSection" class="welcome hidden">
+      <div class="welcome-content">
+        <h2 class="welcome-title">Find Your Next<br/><span class="gradient-text">Favorite Movie</span></h2>
+        <p class="welcome-desc">Search from a catalogue of <strong id="welcomeCount">9,828</strong> films and discover similar movies using semantic AI.</p>
+        <div class="welcome-suggestions">
+          <span>Try:</span>
+          <button class="chip" data-search="Interstellar">Interstellar</button>
+          <button class="chip" data-search="The Dark Knight">The Dark Knight</button>
+          <button class="chip" data-search="Avengers">Avengers</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ RECOMMENDATION LAB (RecLab) ============ -->
+    <section id="recLab" class="reclab-view hidden">
+      <div class="reclab-inner">
+        <div class="reclab-head">
+          <span class="modal-kicker">
+            <span class="modal-kicker-dot"></span>
+            RECOMMENDATION LAB
+          </span>
+          <h2 class="reclab-title">Recommendation <span class="gradient-text">Lab</span></h2>
+          <p class="reclab-desc">
+            Six AI tools — AI Discovery, What-If, Watchlist, Preferences, Insights and History —
+            grouped in one workspace. Switch tools without ever reloading the page.
+          </p>
+        </div>
+
+        <div class="reclab-tabs" id="recLabTabs" role="tablist">
+          <button class="reclab-tab active" data-tab="discovery" role="tab" title="AI Discovery">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>
+            AI Discovery
+          </button>
+          <button class="reclab-tab" data-tab="whatif" role="tab" title="What-If Recommendation">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+            What-If
+          </button>
+          <button class="reclab-tab" data-tab="watchlist" role="tab" title="My Watchlist">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            Watchlist
+          </button>
+          <button class="reclab-tab" data-tab="preferences" role="tab" title="My Preferences">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
+            Preferences
+          </button>
+          <button class="reclab-tab" data-tab="insights" role="tab" title="Recommendation Insights">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+            Insights
+          </button>
+          <button class="reclab-tab" data-tab="history" role="tab" title="Recommendation History">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+            History
+          </button>
+        </div>
+
+        <div class="reclab-workspace">
+          <div class="reclab-ws-head">
+            <span class="reclab-ws-title" id="recLabWsTitle">AI Discovery</span>
+            <span class="reclab-ws-sub" id="recLabWsSub">Describe a vibe in plain words — every pick is grounded in the real catalogue.</span>
+          </div>
+          <div class="reclab-ws-body" id="recLabWorkspace">
+            <!-- active tool content rendered by app.js -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============ MOVIE DETAIL MODAL ============ -->
+  <div id="movieModal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card">
+      <button class="modal-close" id="modalClose">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+      <div class="modal-body">
+        <div class="modal-poster-side">
+          <div class="modal-glow"></div>
+          <img id="modalPoster" class="modal-poster" src="" alt="poster" />
+          <span class="modal-poster-tag">FILM PROFILE</span>
+        </div>
+        <div class="modal-info">
+          <span class="modal-kicker">
+            <span class="modal-kicker-dot"></span>
+            MOVIE DETAILS
+          </span>
+          <h2 id="modalTitle"></h2>
+          <p id="modalOverview" class="overview"></p>
+          <div class="meta-grid" id="modalMeta"></div>
+        </div>
+      </div>
+      <div class="modal-actions" id="modalActions">
+        <button class="btn btn-ghost btn-sm" id="modalWatchlistBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          <span>Watchlist</span>
+        </button>
+        <button class="btn btn-ghost btn-sm act-like" id="modalLikeBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+          <span>Like</span>
+        </button>
+        <button class="btn btn-ghost btn-sm act-dislike" id="modalDislikeBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3z"/><path d="M17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"/></svg>
+          <span>Dislike</span>
+        </button>
+        <button class="btn btn-ghost btn-sm" id="modalCompareBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M9 16l3 3 3-3M9 8l3-3 3 3"/></svg>
+          <span>Compare</span>
+        </button>
+        <button class="btn btn-ghost btn-sm" id="modalTargetBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>More Like This</span>
+        </button>
+      </div>
+      <div id="modalReasons" class="modal-reasons hidden"></div>
+    </div>
+  </div>
+
+  <!-- ============ COMPARE TOOL MODAL ============ -->
+  <div id="featureModal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card feature-card">
+      <button class="modal-close" id="featureModalClose">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+      <div class="feature-header">
+        <span class="modal-kicker">
+          <span class="modal-kicker-dot"></span>
+          CINEMIND TOOLS
+        </span>
+        <h2 id="featureModalTitle" class="feature-title"></h2>
+      </div>
+      <div id="featureModalBody" class="feature-body"></div>
+    </div>
+  </div>
+
+  <!-- ============ COMPARE DOCK (floating tray) ============ -->
+  <div id="compareDock" class="compare-dock hidden">
+    <div class="compare-dock-inner">
+      <span class="compare-dock-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M9 16l3 3 3-3M9 8l3-3 3 3"/></svg>
+        Compare
+      </span>
+      <div id="compareChips" class="compare-chips"></div>
+      <button id="compareActionBtn" class="btn btn-primary btn-sm" disabled>Compare (0/3)</button>
+      <button id="compareClearBtn" class="btn btn-ghost btn-sm">Clear</button>
+    </div>
+  </div>
+
+  <!-- ============ FLOATING CHAT LAUNCHER ============ -->
+  <button id="chatLauncher" class="chat-launcher" aria-label="Open CineMind chat">
+    <div class="launcher-pulse"></div>
+    <div class="launcher-pulse launcher-pulse-2"></div>
+    <svg class="launcher-icon-open" width="28" height="28" viewBox="0 0 24 24" fill="none">
+      <path d="M3 4h2.5l3 9 3-9h2.5l3 9 3-9H21v16h-2.5V9l-3 9h-2.5l-3-9v11H3z" fill="#ffffff"/>
+    </svg>
+    <svg class="launcher-icon-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M18 6 6 18M6 6l12 12"/>
+    </svg>
+    <span class="launcher-badge"></span>
+  </button>
+
+  <!-- ============ PREMIUM CHATBOT PANEL ============ -->
+  <aside id="chatPanel" class="chat-panel">
+    <!-- Backdrop for mobile -->
+    <div class="chat-backdrop" id="chatBackdrop"></div>
+
+    <div class="chat-panel-inner">
+      <!-- Header with gradient + animated avatar -->
+      <div class="chat-header">
+        <div class="chat-header-content">
+          <div class="chat-avatar-wrap">
+            <div class="chat-avatar">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M3 4h2.5l3 9 3-9h2.5l3 9 3-9H21v16h-2.5V9l-3 9h-2.5l-3-9v11H3z" fill="#ffffff"/>
+              </svg>
+            </div>
+            <span class="chat-online-dot"></span>
+          </div>
+          <div class="chat-brand-info">
+            <h3><span>Cine</span><span class="chat-brand-accent">Mind</span></h3>
+            <div class="chat-status-row">
+              <span class="chat-status">● Online</span>
+              <span class="chat-divider">·</span>
+              <span class="chat-engine">FAISS powered</span>
+            </div>
+          </div>
+          <button id="chatCloseBtn" class="chat-close">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Messages area -->
+      <div id="chatMessages" class="chat-messages"></div>
+
+      <!-- Quick reply chips -->
+      <div id="chatSuggestions" class="chat-suggestions">
+        <button class="quick-reply" data-msg="Suggest 5 movies like Interstellar">
+          🚀 Like Interstellar
+        </button>
+        <button class="quick-reply" data-msg="Recommend movies like The Dark Knight">
+          🦇 Like Dark Knight
+        </button>
+        <button class="quick-reply" data-msg="Give me 3 movies similar to Avengers">
+          💥 Like Avengers
+        </button>
+        <button class="quick-reply" data-msg="Recommend sci-fi movies like Inception">
+          🌀 Sci-fi like Inception
+        </button>
+      </div>
+
+      <!-- Input bar -->
+      <form class="chat-input-row" id="chatForm">
+        <div class="chat-input-wrap">
+          <input type="text" id="chatInput" placeholder="Ask for movie recommendations…" autocomplete="off" />
+          <button type="submit" class="chat-send-btn" aria-label="Send">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="m22 2-7 20-4-9-9-4Z"/>
+            </svg>
+          </button>
+        </div>
+      </form>
+    </div>
+  </aside>
+
+  <!-- ============ STATUS TICKER (bottom) ============ -->
+  <div class="ticker" id="statusTicker" aria-hidden="true">
+    <div class="ticker-track">
+      <span>SEMANTIC SEARCH</span><i></i>
+      <span>FAISS POWERED</span><i></i>
+      <span>9,828 FILMS</span><i></i>
+      <span>384-D EMBEDDINGS</span><i></i>
+      <span>MOVIE MATCHING</span><i></i>
+      <span>DIRECTOR INSIGHTS</span><i></i>
+      <span>SEMANTIC SEARCH</span><i></i>
+      <span>FAISS POWERED</span><i></i>
+      <span>9,828 FILMS</span><i></i>
+      <span>384-D EMBEDDINGS</span><i></i>
+      <span>MOVIE MATCHING</span><i></i>
+      <span>DIRECTOR INSIGHTS</span><i></i>
+    </div>
+  </div>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="footer">
+    <p>CineMind · Find the Right Story for Every Mood, Moment, and Movie Night.</p>
+  </footer>
+
+  <!-- ============ SCRIPTS ============ -->
+  <script>
+    (function () {
+      var glow = document.getElementById('cursorGlow');
+      if (window.matchMedia('(hover: none)').matches && glow) {
+        glow.style.display = 'none';
+      }
+      window.addEventListener('mousemove', function (e) {
+        if (glow) {
+          glow.style.opacity = '1';
+          glow.style.transform = 'translate3d(' + e.clientX + 'px, ' + e.clientY + 'px, 0) translate(-50%, -50%)';
+        }
+      });
+      window.addEventListener('mouseleave', function () {
+        if (glow) glow.style.opacity = '0';
+      });
+
+      var bar = document.getElementById('scrollProgress');
+      function onScroll() {
+        var h = document.documentElement;
+        var max = h.scrollHeight - h.clientHeight;
+        bar.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + '%';
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+
+      var hero = document.getElementById('selectedSection');
+      var posterWrap = hero ? hero.querySelector('.hero-poster-wrap') : null;
+      if (hero && posterWrap && window.matchMedia('(hover: none)').matches === false) {
+        hero.addEventListener('mousemove', function (e) {
+          var r = hero.getBoundingClientRect();
+          var dx = (e.clientX - r.left) / r.width - 0.5;
+          var dy = (e.clientY - r.top) / r.height - 0.5;
+          posterWrap.style.transform =
+            'rotateY(' + (dx * 12).toFixed(2) + 'deg) rotateX(' + (-dy * 12).toFixed(2) + 'deg)';
+        });
+        hero.addEventListener('mouseleave', function () {
+          posterWrap.style.transform = '';
+        });
+      }
+
+      if (window.IntersectionObserver) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (en) {
+            var el = en.target;
+            if (!el._done && en.isIntersecting) {
+              el._done = true;
+              var target = parseFloat(el.dataset.count);
+              var start = null;
+              function frame(t) {
+                if (!start) start = t;
+                var p = Math.min((t - start) / 1500, 1);
+                var eased = 1 - Math.pow(1 - p, 3);
+                el.textContent = Math.round(target * eased).toLocaleString('en-US');
+                if (p < 1) requestAnimationFrame(frame);
+                else el.textContent = el.dataset.full;
+              }
+              requestAnimationFrame(frame);
+            }
+          });
+        }, { threshold: 0.4 });
+        document.querySelectorAll('[data-count]').forEach(function (s) {
+          io.observe(s);
+        });
+      }
+    })();
+  </script>
+  <script src="js/notifications.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

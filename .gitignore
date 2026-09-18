@@ -1,0 +1,25 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ---- Secrets ----
+.env
+
+# ---- Saved model artifacts (DO NOT commit large files) ----
+# Keep these ignored; place them manually in models/
+models/movie_embeddings.npy
+models/faiss_index.bin
+models/movie_metadata.csv
+
+# ---- Local runtime user data (watchlist / preferences / history) ----
+data/
+
+# ---- Editor / OS ----
+.vscode/
+.idea/
+.DS_Store
+*.log
