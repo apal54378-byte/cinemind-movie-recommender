@@ -18,28 +18,24 @@ IMPORTANT DESIGN RULE (from the project spec):
 ============================================================
 """
 
-import os
 import re
-import json
-from openai import OpenAI
 
 # Import the LOCAL recommendation engine — same module app.py uses.
 from . import recommendation_engine as engine
 
-# ------------------------------------------------------------------
-# Configure the AI client (OpenAI-compatible: works with Groq,
-# Together, Ollama, etc. by changing AI_BASE_URL in .env)
-# ------------------------------------------------------------------
-AI_API_KEY = os.getenv("AI_API_KEY", "")
-AI_BASE_URL = os.getenv("AI_BASE_URL", "https://api.groq.com/openai/v1")
-AI_MODEL = os.getenv("AI_MODEL", "llama-3.3-70b-versatile")
+# The external AI provider is Groq (official `groq` SDK), configured and
+# created in one place: backend/llm.py. The key is never logged here.
+from . import llm
 
-_ai_client = None
-if AI_API_KEY:
-    _ai_client = OpenAI(api_key=AI_API_KEY, base_url=AI_BASE_URL)
-else:
-    print("[CineMind] WARNING: AI_API_KEY not set. Chatbot will use "
-          "a basic fallback reply (no external AI). Set it in .env.")
+
+if not llm.sdk_available():
+    print("[CineMind] WARNING: the 'groq' package is not installed. Install it "
+          "with 'python -m pip install -r requirements.txt'. The chatbot will "
+          "use its basic local fallback reply.")
+elif not llm.is_configured():
+    print("[CineMind] WARNING: GROQ_API_KEY is missing or empty. Chatbot will use "
+          "its basic local fallback reply. Configure GROQ_API_KEY in your local "
+          ".env file and restart the server to enable Groq.")
 
 
 # ------------------------------------------------------------------
@@ -200,13 +196,16 @@ def _text(value) -> str:
 
 def _ai_summarize(user_message: str, selected, recommendations) -> str:
     """
-    Ask the external AI to write a short friendly reply that
-    references ONLY the movies the local engine returned.
+    Ask Groq to write a short friendly reply that references ONLY the
+    movies the local engine returned. Falls back to a deterministic local
+    sentence when Groq is not configured or the request fails.
     """
-    if not _ai_client:
-        # Fallback when no AI key is configured.
+    def _local_reply():
         names = ", ".join(_text(r["Title"]) for r in recommendations)
         return f"Here are some movies similar to {_text(selected['Title'])}: {names}."
+
+    if not llm.is_configured():
+        return _local_reply()
 
     # Build a strict context: only real data, no invented fields.
     context_lines = []
@@ -237,20 +236,18 @@ def _ai_summarize(user_message: str, selected, recommendations) -> str:
     )
 
     try:
-        resp = _ai_client.chat.completions.create(
-            model=AI_MODEL,
-            messages=[
+        return llm.chat_completion(
+            [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
             temperature=0.6,
             max_tokens=200,
         )
-        return resp.choices[0].message.content.strip()
-    except Exception as e:
-        print(f"[CineMind] AI call failed: {e}")
-        names = ", ".join(_text(r["Title"]) for r in recommendations)
-        return f"Here are some movies similar to {_text(selected['Title'])}: {names}."
+    except llm.LLMError as e:
+        # Clear diagnostic (never contains the key); keep the local fallback.
+        print(f"[CineMind] Groq call failed: {e}")
+        return _local_reply()
 
 
 # ------------------------------------------------------------------
@@ -302,14 +299,14 @@ def chat(user_message: str) -> dict:
 
 def _ai_general_reply(user_message: str) -> str:
     """Handle greetings / general questions when no movie is identified."""
-    if not _ai_client:
-        return ("Hi! Tell me a movie you liked (e.g. 'Suggest 5 movies like "
+    fallback = ("Hi! Tell me a movie you liked (e.g. 'Suggest 5 movies like "
                 "Interstellar') and I'll find similar films using the local "
                 "recommendation engine.")
+    if not llm.is_configured():
+        return fallback
     try:
-        resp = _ai_client.chat.completions.create(
-            model=AI_MODEL,
-            messages=[
+        return llm.chat_completion(
+            [
                 {
                     "role": "system",
                     "content": (
@@ -325,11 +322,9 @@ def _ai_general_reply(user_message: str) -> str:
             temperature=0.6,
             max_tokens=150,
         )
-        return resp.choices[0].message.content.strip()
-    except Exception as e:
-        print(f"[CineMind] AI call failed: {e}")
-        return ("Hi! Tell me a movie you liked, e.g. 'Suggest 5 movies like "
-                "Interstellar', and I'll find similar films.")
+    except llm.LLMError as e:
+        print(f"[CineMind] Groq call failed: {e}")
+        return fallback
 
 
 # ------------------------------------------------------------------

@@ -25,6 +25,7 @@ This IS the final Sentence Transformer + FAISS model.
 from pathlib import Path
 import re
 import math
+import threading
 import numpy as np
 import pandas as pd
 import faiss
@@ -607,7 +608,8 @@ def _attribute_score(cand: dict, w: dict, total_w: float) -> float:
 # ------------------------------------------------------------------
 
 _sent_model = None
-_sent_available = False
+_sent_available = None  # None = not attempted; False = failed; True = loaded
+_sent_model_lock = threading.Lock()
 
 def _load_sentence_model():
     """Lazy-load all-MiniLM-L6-v2 (only used if installed)."""
@@ -616,14 +618,24 @@ def _load_sentence_model():
         return True
     if _sent_available is False:
         return False          # already failed once — don't retry
-    try:
-        from sentence_transformers import SentenceTransformer
-        _sent_model = SentenceTransformer("all-MiniLM-L6-v2")
+    # Model downloads/initialization are expensive. Serialize the first
+    # attempt so concurrent discovery requests share one result.
+    with _sent_model_lock:
+        if _sent_available is True and _sent_model is not None:
+            return True
+        if _sent_available is False:
+            return False
+        try:
+            from sentence_transformers import SentenceTransformer
+            model = SentenceTransformer("all-MiniLM-L6-v2")
+        except Exception as exc:
+            _sent_model = None
+            _sent_available = False
+            print(f"[CineMind] WARNING: Sentence Transformer unavailable; AI Discovery will use keyword fallback ({type(exc).__name__}).")
+            return False
+        _sent_model = model
         _sent_available = True
         return True
-    except Exception:
-        _sent_available = False
-        return False
 
 
 _STOPWORDS = frozenset({

@@ -10,7 +10,7 @@ movie data is always models/movie_metadata.csv.
 ============================================================
 """
 
-from .storage import load_json, save_json, now_iso
+from .storage import load_json, save_json, update_json, now_iso
 from . import recommendation_engine as engine
 
 WATCHLIST_FILE = "watchlist.json"
@@ -47,26 +47,31 @@ def add_to_watchlist(movie_id) -> dict:
     title = str(engine.movie_metadata.iloc[movie_index]["Title"])
     movie_id_key = str(engine.movie_metadata.iloc[movie_index]["movie_id"])
 
-    entries = _load()
-    for entry in entries:
-        if str(entry.get("movie_id")) == movie_id_key:
-            return {**entry, "added": False}
+    def add(data):
+        entries = data.get("watchlist", []) if isinstance(data, dict) else []
+        if not isinstance(entries, list):
+            entries = []
+        for existing in entries:
+            if str(existing.get("movie_id")) == movie_id_key:
+                return {"watchlist": entries}, {**existing, "added": False}
+        entry = {"movie_id": movie_id_key, "title": title, "added_at": now_iso()}
+        entries.append(entry)
+        return {"watchlist": entries}, {**entry, "added": True}
 
-    entry = {"movie_id": movie_id_key, "title": title, "added_at": now_iso()}
-    entries.append(entry)
-    _save(entries)
-    return {**entry, "added": True}
+    return update_json(WATCHLIST_FILE, WATCHLIST_DEFAULT, add)
 
 
 def remove_from_watchlist(movie_id) -> bool:
     """Remove a movie. Returns True if something was removed."""
     movie_id = str(movie_id)
-    entries = _load()
-    remaining = [e for e in entries if str(e.get("movie_id")) != movie_id]
-    if len(remaining) == len(entries):
-        return False
-    _save(remaining)
-    return True
+    def remove(data):
+        entries = data.get("watchlist", []) if isinstance(data, dict) else []
+        if not isinstance(entries, list):
+            entries = []
+        remaining = [e for e in entries if str(e.get("movie_id")) != movie_id]
+        return {"watchlist": remaining}, len(remaining) != len(entries)
+
+    return update_json(WATCHLIST_FILE, WATCHLIST_DEFAULT, remove)
 
 
 def get_watchlist() -> list:

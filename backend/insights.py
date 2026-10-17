@@ -22,7 +22,7 @@ these entries + the watchlist + the preferences.
 
 from collections import Counter
 
-from .storage import load_json, save_json, now_iso
+from .storage import load_json, save_json, update_json, now_iso
 from . import recommendation_engine as engine
 
 HISTORY_FILE = "recommendation_history.json"
@@ -43,9 +43,16 @@ def _save(entries: list) -> None:
 def log_event(event_type: str, **fields) -> None:
     """Append one activity entry (timestamped). Never raises."""
     try:
-        entries = _load()
-        entries.append({"type": event_type, "timestamp": now_iso(), **fields})
-        _save(entries)
+        event = {"type": event_type, "timestamp": now_iso(), **fields}
+
+        def append_event(data):
+            entries = data.get("entries", []) if isinstance(data, dict) else []
+            if not isinstance(entries, list):
+                entries = []
+            entries.append(event)
+            return {"entries": entries[-MAX_ENTRIES:]}, None
+
+        update_json(HISTORY_FILE, HISTORY_DEFAULT, append_event)
     except Exception:
         pass  # history is best-effort; never break a request over it.
 

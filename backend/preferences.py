@@ -18,7 +18,7 @@ read them directly on the next request.
 ============================================================
 """
 
-from .storage import load_json, save_json, now_iso
+from .storage import load_json, save_json, update_json, now_iso
 from . import recommendation_engine as engine
 
 PREFS_FILE = "user_preferences.json"
@@ -101,21 +101,25 @@ def add_feedback(movie_id, action: str) -> dict:
         raise LookupError(f"movie_id '{movie_id}' not found.")
 
     movie_id = str(movie_id)
-    prefs = _load()
 
-    liked = [m for m in prefs.get("liked_movies", []) if str(m.get("movie_id")) != movie_id]
-    disliked = [m for m in prefs.get("disliked_movies", []) if str(m.get("movie_id")) != movie_id]
+    def apply_feedback(data):
+        prefs = dict(PREFS_DEFAULT)
+        prefs.update(data if isinstance(data, dict) else {})
+        for key in ("liked_movies", "disliked_movies", "preferred_genres", "preferred_themes"):
+            if not isinstance(prefs.get(key), list):
+                prefs[key] = []
+        liked = [m for m in prefs["liked_movies"] if str(m.get("movie_id")) != movie_id]
+        disliked = [m for m in prefs["disliked_movies"] if str(m.get("movie_id")) != movie_id]
+        if action == "like":
+            liked.append({"movie_id": movie_id, "added_at": now_iso()})
+        else:
+            disliked.append({"movie_id": movie_id, "added_at": now_iso()})
+        prefs["liked_movies"] = liked
+        prefs["disliked_movies"] = disliked
+        _recompute_tags(prefs)
+        return prefs, prefs
 
-    if action == "like":
-        liked.append({"movie_id": movie_id, "added_at": now_iso()})
-    else:
-        disliked.append({"movie_id": movie_id, "added_at": now_iso()})
-
-    prefs["liked_movies"] = liked
-    prefs["disliked_movies"] = disliked
-    _recompute_tags(prefs)
-    _save(prefs)
-    return prefs
+    return update_json(PREFS_FILE, PREFS_DEFAULT, apply_feedback)
 
 
 def clear_preferences() -> dict:

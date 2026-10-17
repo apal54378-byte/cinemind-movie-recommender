@@ -2,23 +2,26 @@
 # Install with:  pip install -r requirements.txt
 
 # --- Web framework ---
-fastapi==0.115.0
-uvicorn[standard]==0.30.6
-python-multipart==0.0.9          # for form data if needed later
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.6
+python-multipart>=0.0.9          # for form data if needed later
 
 # --- Data + ML artifacts (the final model) ---
-pandas==2.2.2
-numpy==1.26.4
-faiss-cpu==1.8.0.post1
+# NOTE: pandas 2.2.2 / numpy 1.26.4 / faiss-cpu 1.8.0.post1 have NO wheels
+# for Python 3.13+, so pip tries to compile them from source and fails.
+# These minimums are the first releases with cp313 wheels (and still install
+# cleanly on older Pythons 3.9-3.12).
+pandas>=2.2.3
+numpy>=2.1.0
+faiss-cpu>=1.9.0
 
-# NOTE: sentence-transformers is NOT needed at runtime because
-# embeddings are already saved in models/movie_embeddings.npy.
-# The notebook used it once to CREATE the embeddings; the backend
-# only LOADS them.
+# Used by AI Discovery to embed search queries with all-MiniLM-L6-v2.
+# Keep <5 for the project's Python 3.9+ compatibility.
+sentence-transformers>=4.1.0,<5.0.0
 
 # --- Chatbot (ONLY the chatbot may use an external AI API) ---
-openai==1.40.0                   # works with OpenAI, Groq, Together, Ollama, etc.
-python-dotenv==1.2.3             # auto-load .env vars (AI_API_KEY etc.)
+groq>=1.0.0,<2.0.0               # official Groq Python SDK
+python-dotenv==1.2.3             # auto-load .env vars (GROQ_API_KEY etc.)
 
 # --- Server auto-reload during development ---
 # uvicorn --reload is enough, no extra package needed.
