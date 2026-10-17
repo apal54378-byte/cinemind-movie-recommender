@@ -22,7 +22,7 @@ Environment variables
     GROQ_API_KEY   (required)  API key for Groq.
                    `AI_API_KEY` is accepted as a deprecated fallback.
     GROQ_MODEL     (optional)  Chat model id.
-                   Default: "llama-3.3-70b-versatile" (a current
+                   Default: "openai/gpt-oss-120b" (a current
                    Groq production model).
                    `AI_MODEL` is accepted as a deprecated fallback.
     GROQ_BASE_URL  (optional)  Override the Groq API base URL.
@@ -47,7 +47,7 @@ except Exception as exc:  # pragma: no cover - depends on install state
 
 # Model verified against Groq's official model list:
 #   https://console.groq.com/docs/models  ("Production Models")
-DEFAULT_GROQ_MODEL = "llama-3.3-70b-versatile"
+DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b"
 DEFAULT_GROQ_TIMEOUT = 30.0
 
 

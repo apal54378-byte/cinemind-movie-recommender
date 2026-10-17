@@ -51,7 +51,7 @@ class _EnvIsolated(unittest.TestCase):
 
 class ProviderConfigTests(_EnvIsolated):
     def test_default_model_is_a_current_groq_production_model(self):
-        self.assertEqual(llm.get_model(), "llama-3.3-70b-versatile")
+        self.assertEqual(llm.get_model(), "openai/gpt-oss-120b")
 
     def test_groq_model_env_overrides_default(self):
         os.environ["GROQ_MODEL"] = "openai/gpt-oss-20b"
