@@ -486,7 +486,7 @@ flowchart TD
 - **`_ai_general_reply()`:** handles greetings/questions when no movie is identified — Groq if
   configured, else a fixed fallback.
 - **Configured Groq model (verified from source/config):** default is
-  `llama-3.3-70b-versatile` (`llm.py:50`), overridable by `GROQ_MODEL`. The API key is read from
+  `openai/gpt-oss-120b` (`llm.py:50`), overridable by `GROQ_MODEL`. The API key is read from
   `GROQ_API_KEY` (legacy `AI_API_KEY` accepted; `AI_MODEL` as a model fallback). **No key value
   is ever printed or returned.**
 - **Division of labour:**

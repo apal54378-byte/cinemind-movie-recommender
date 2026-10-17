@@ -131,7 +131,7 @@ For the full internal walkthrough — sequence diagrams, startup/fallback paths 
 | Backend | Python 3.9+, FastAPI, Uvicorn |
 | ML / retrieval | Sentence Transformers (`all-MiniLM-L6-v2`), FAISS, NumPy, pandas |
 | Frontend | Plain HTML, CSS, JavaScript (no build step, no bundler) |
-| Chatbot | Groq API via the official `groq` Python SDK (`llama-3.3-70b-versatile`) |
+| Chatbot | Groq API via the official `groq` Python SDK (`openai/gpt-oss-120b`) |
 | Storage | Atomic JSON files under `data/` |
 
 > **Note:** The core recommendation engine loads pre-computed embeddings from disk and does not need `sentence-transformers`. AI Discovery uses `sentence-transformers` to embed query text when available; if the package or model cannot load, it falls back to the deterministic keyword/theme ranker. The dependency is included in `requirements.txt` for the semantic path.
@@ -278,7 +278,7 @@ Environment variables (`.env`):
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `GROQ_API_KEY` | *(empty — fallback replies)* | Groq API key for the chatbot |
-| `GROQ_MODEL` | `llama-3.3-70b-versatile` | Groq-hosted chat model id |
+| `GROQ_MODEL` | `openai/gpt-oss-120b` | Groq-hosted chat model id |
 | `GROQ_BASE_URL` | *(Groq SDK default)* | Optional API base URL override (proxy / gateway) |
 | `GROQ_TIMEOUT` | `30` | Per-request timeout in seconds |
 | `HOST` | `127.0.0.1` | Bind host (used with `python -m backend.app`) |
@@ -286,7 +286,7 @@ Environment variables (`.env`):
 
 The chatbot uses the **official Groq Python SDK** (`groq`). No other provider is used: if Groq is not configured or unreachable, the chatbot returns a deterministic local reply built from the local engine's results and never silently switches providers.
 
-The default model, `llama-3.3-70b-versatile`, is a current **Groq production model** (see the [Groq models list](https://console.groq.com/docs/models)). Override it with `GROQ_MODEL`, for example `llama-3.1-8b-instant` or `openai/gpt-oss-20b`.
+The default model, `openai/gpt-oss-120b`, is a current **Groq production model** (see the [Groq models list](https://console.groq.com/docs/models)). Override it with `GROQ_MODEL`, for example `openai/gpt-oss-20b` or `llama-3.1-8b-instant`.
 
 To enable Groq, set `GROQ_API_KEY` in the local, Git-ignored `.env` file and restart the backend. The server logs a warning when the key is missing or empty; it **never** prints the key value. Authentication errors, rate limits (HTTP 429), timeouts, connection failures and invalid model ids are logged with a clear diagnosis, and the chatbot falls back to its local reply.
 
@@ -435,7 +435,7 @@ An orchestration layer, not a model:
 The single place where the chatbot's external provider is configured and created:
 
 - Wraps the official `groq` SDK; the client is created lazily and cached.
-- Reads `GROQ_API_KEY` (legacy `AI_API_KEY` fallback), `GROQ_MODEL` (default `llama-3.3-70b-versatile`), `GROQ_BASE_URL` and `GROQ_TIMEOUT` (default 30 s). The key value is never logged.
+- Reads `GROQ_API_KEY` (legacy `AI_API_KEY` fallback), `GROQ_MODEL` (default `openai/gpt-oss-120b`), `GROQ_BASE_URL` and `GROQ_TIMEOUT` (default 30 s). The key value is never logged.
 - `chat_completion(...)` maps Groq errors to safe, actionable messages — authentication (401), permission (403), rate limit (429), timeout, connection error, and invalid/retired model id — then raises `LLMUnavailable` so callers fall back locally.
 - `provider_status()` returns a diagnostic snapshot that contains **no** secrets.
 
